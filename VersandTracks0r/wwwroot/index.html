@@ -1,0 +1,764 @@
+﻿<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Versand Tracks0r</title>
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+  <link rel="manifest" href="/manifest.json">
+
+  <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" type="text/css">
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.5.1/dist/leaflet.css"
+    integrity="sha512-xwE/Az9zrjBIphAcBb3F6JVqxf46+CDLwfLMHloNu6KEQCAWi6HcDUbeOfBIptF7tcCzusKFjFw2yuvEpDL9wQ=="
+    crossorigin="" />
+  <script src="https://unpkg.com/leaflet@1.5.1/dist/leaflet.js"
+    integrity="sha512-GffPMF3RvMeYyc1LWMHtK8EbPv0iNZ8/oTtHPx9/cc2ILxQ+u905qIwdpULaqDkyBKgOaB57QTMg7ztg8Jm2Og=="
+    crossorigin=""></script>
+  <script src="https://cdn.jsdelivr.net/gh/Igor-Vladyka/leaflet.motion/dist/leaflet.motion.min.js"></script>
+  <style>
+    .light-mode {
+      --bg: #ffffff;
+      --popup-bg: #e0e0e0;
+      --selection: #d6d6d6;
+      --comment: #8e908c;
+      --popup-fg: #969896;
+      --fg: #4d4d4c;
+      --fg-light: #282a2e;
+      --bg-light: #1d1f21;
+      --red: #c82829;
+      --orange: #f5871f;
+      --yellow: #eab700;
+      --green: #718c00;
+      --cyan: #3e999f;
+      --blue: #4271ae;
+      --pink: #8959a8;
+      --brown: #a3685a;
+    }
+
+    .dark-mode {
+      --bg: #1d1f21;
+      --popup-bg: #282a2e;
+      --selection: #373b41;
+      --comment: #969896;
+      --popup-fg: #b4b7b4;
+      --fg: #c5c8c6;
+      --fg-light: #e0e0e0;
+      --bg-light: #ffffff;
+      --red: #cc6666;
+      --orange: #de935f;
+      --yellow: #f0c674;
+      --green: #b5bd68;
+      --cyan: #8abeb7;
+      --blue: #81a2be;
+      --pink: #b294bb;
+      --brown: #a3685a;
+    }
+
+    body {
+      margin: 0;
+    }
+
+    #app {
+      min-height: 100vh;
+      min-width: 100%;
+      font-family: roboto;
+      font-size: 20px;
+      color: var(--fg);
+      background: var(--bg);
+    }
+
+    tr:nth-child(even) {
+      background: var(--popup-bg);
+    }
+
+    tr:nth-child(odd) {
+      background: var(--selection);
+    }
+
+    table {
+      margin-left: auto;
+      margin-right: auto;
+      width: 80%;
+      user-select: none;
+    }
+
+    td {
+      padding: 5px;
+    }
+
+    input[type=radio] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      background-size: contain;
+      border-radius: 5px;
+      outline: 0;
+      vertical-align: middle;
+    }
+
+    input[type=radio]:checked {
+      box-shadow: var(--blue) 0px 0px 0px 5px;
+    }
+
+    input[type=text] {
+      font-size: 30px;
+      width: inherit;
+      padding: 10px;
+      background-color: var(--bg);
+      color: var(--fg);
+      outline-color: var(--blue);
+      border: solid transparent 2px;
+      border-radius: 4px;
+    }
+
+
+
+    input[type=text]::placeholder {
+      color: var(--comment);
+    }
+
+    .dhl {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      outline: 0;
+      vertical-align: middle;
+      background-image: url("/img/dhl.jpg");
+    }
+
+    .dpd {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      outline: 0;
+      vertical-align: middle;
+      background-image: url("/img/dpd.png");
+    }
+
+    .hermes {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      outline: 0;
+      vertical-align: middle;
+      background-image: url("/img/hermes.png");
+    }
+
+    .amazon {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      background-position-y: 5px;
+      outline: 0;
+      vertical-align: middle;
+      background-image: url("/img/amazon.jpg");
+    }
+
+    .ups {
+      width: 80px;
+      height: 80px;
+      background-size: contain;
+      outline: 0;
+      vertical-align: middle;
+      background-image: url("/img/ups.jpg");
+    }
+
+    .trackingId {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    button {
+      color: var(--fg);
+      padding: 5px;
+      background-color: var(--bg);
+      border-radius: 5px;
+      margin: 5px;
+      border: transparent;
+    }
+
+    nav button {
+      width: 50px;
+      height: 50px;
+    }
+
+    button:focus {
+      outline-color: var(--blue);
+    }
+
+    .delete {
+      color: var(--red);
+    }
+
+    .add {
+      color: var(--blue);
+    }
+
+    .ok {
+      color: var(--green);
+    }
+
+    .warning {
+      color: var(--yellow);
+    }
+
+    .error {
+      color: var(--orange);
+    }
+
+    .info {
+      color: var(--blue);
+    }
+
+    .critical {
+      color: var(--red);
+    }
+
+    nav {
+      display: flex;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background-color: var(--selection);
+      border-bottom: 3px solid var(--fg);
+    }
+
+    .push {
+      margin-left: auto;
+    }
+
+    .center {
+      margin-left:auto;
+    }
+
+    .history-line {
+      /* background: linear-gradient(var(--green), var(--orange)) no-repeat 34px/4px 100%; */
+    }
+
+    .history {
+      display: flex;
+      flex-wrap: wrap;
+      flex-direction: column;
+      align-content: space-between;
+    }
+
+    .history-time {
+      color: var(--comment);
+      font-size: 16px;
+    }
+
+    .history-message {
+      margin-left: 15px;
+    }
+
+    .history-entry {
+      display: flex;
+      flex-wrap: nowrap;
+      flex-direction: row;
+      align-items: center;
+      margin: 15px;
+    }
+
+    .history-title {
+      font-size: 24px;
+      margin: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: left;
+    }
+
+    .history-body {
+      background-color: #718c00;
+    }
+
+    .history-icon {
+      background-color: var(--bg);
+      font-size: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 5px;
+      margin-right: 15px;
+      margin-left: 5px;
+      border: 2px solid var(--fg);
+    }
+
+    a {
+      color: var(--blue);
+    }
+
+    .fade-enter,
+    .fade-leave-to {
+      opacity: 0;
+    }
+
+    .fade-enter-active {
+      transition: 0.3s;
+    }
+
+    #map {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+
+      display: flex;
+      flex-direction: column;
+      /* opacity: 0.5; */
+
+      background-color: var(--selection);
+
+      text-align: center;
+    }
+
+    #addPopup {
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      right: 0;
+
+      display: flex;
+      flex-direction: column;
+
+      background-color: var(--selection);
+    }
+
+    .title {
+      font-size: 40px;
+      align-self: center;
+      border-bottom: var(--fg) 2px solid;
+      margin-bottom: 15px;
+    }
+
+    .carrierLogoSize {
+      border-radius: 5px;
+      width: 64px;
+      height: 64px;
+    }
+
+    .carrierLogo {
+      border-radius: 5px;
+      box-shadow: 2px 2px 5px 0px var(--fg);
+    }
+
+    #internalMap {
+      height: 100%;
+      width: 100%;
+    }
+
+    .tracking_line {
+      stroke: var(--blue);
+      fill: none;
+      stroke-dasharray: 10, 10;
+      stroke-width: 5;
+    }
+
+    .trackingIcon {
+      background-color: rgba(0, 0, 0, 0);
+      font-size: 30px;
+      color: var(--orange);
+    }
+
+    form {
+      align-self: center;
+      flex-grow: 1;
+      text-align: center;
+    }
+
+    form button {
+      font-size: 34px !important;
+      width: 150px;
+      height: 50px;
+      color: var(--blue);
+    }
+
+    .deleteShipment {
+      display: flex;
+      flex-flow: column;
+    }
+
+    [v-cloak] {
+      display: none;
+    }
+  </style>
+</head>
+
+<body>
+  <div v-cloak id="app" :class="dark_mode ? 'dark-mode' : 'light-mode'">
+    <nav>
+      <button @click="addShipment" class="material-icons add">library_add</button>
+      <button class="material-icons">search</button>
+      <transition name="fade" appear>
+          <div class="center" style="font-size: 30px">🚚</div>
+      </transition>
+      <div class="push">
+        <button class="material-icons">delete</button>
+      </div>
+      <div>
+        <button @click="toggleTheme" class="material-icons">lightbulb</button>
+      </div>
+    </nav>
+    <br>
+    <br>
+    <br>
+
+    <div v-show="showAdd" id="addPopup" ref="addPopup">
+      <div class="title">Add</div>
+      <form @submit="checkForm" action="/api/shipments" method="post" enctype="multipart/form-data">
+        <br>
+        <input required v-model="addForm.trackingId" autocomplete="off" type="text" name="trackingId"
+          placeholder="TRACKING ID...">
+        <br>
+        <br>
+        <br>
+        <input v-model="addForm.comment" autocomplete="off" type="text" name="comment" placeholder="Comment...">
+        <br>
+        <br>
+        <br>
+        <input required v-model="addForm.carrier" type="radio" name="carrier" value="dhl" class="dhl">
+        <input required v-model="addForm.carrier" type="radio" name="carrier" value="hermes" class="hermes">
+        <input required v-model="addForm.carrier" type="radio" name="carrier" value="dpd" class="dpd">
+        <input required v-model="addForm.carrier" type="radio" name="carrier" value="ups" class="ups">
+        <input required v-model="addForm.carrier" type="radio" name="carrier" value="amazon" class="amazon">
+        <br>
+        <br>
+        <button type="submit" class="material-icons">cloud_upload</button>
+      </form>
+      <button @click="addShipment" class="material-icons delete">close</button>
+    </div>
+
+    <div v-show="showMap" id="map" ref="map">
+      <div class="title">{{ mapTitle }}</div>
+      <div id="internalMap"></div>
+      <button @click="popupMap" class="material-icons delete">close</button>
+    </div>
+
+    <table>
+      <tr>
+        <th>Tracking</th>
+      </tr>
+      <tr v-for="shipment in shipments">
+        <td @click="expand(shipment)">
+
+          <div class="history-title">
+            <div class="carrierLogo">
+              <div class="carrierLogoSize" :class="getCarrierLogo(shipment.carrier)"></div>
+            </div>
+            <div style="margin-left: 15px">
+              {{ shipment.comment }} ({{ shipment.trackingId }})
+            </div>
+          </div>
+
+
+          <div class="history-entry" v-if="!shipment.hasData">
+            <div class="material-icons history-icon">
+              {{ getIcon(shipment.status) }}
+            </div>
+            <div>
+              <div class="history-time">
+                {{ formatDateTime(shipment.updatedAt) }}
+              </div>
+              <div class="history-message">
+                Loading data ...
+              </div>
+            </div>
+          </div>
+
+          <div class="history" :class="{ 'history-line' : expanded == shipment  && shipment.history.length > 1 }">
+            <!-- <transition-group name="fade"> -->
+            <div class="history-entry" :key="entry.id" v-for="entry in filterHistory(shipment)">
+              <!-- <div class="history-entry" v-for="entry in shipment.history"> -->
+              <div class="material-icons history-icon" :class="getColor(entry.status)">
+                {{ getIcon(entry.status) }}
+              </div>
+
+              <div>
+                <div class="history-time">
+                  {{ formatDateTime(entry.updatedAt) }} - <a @click.stop.prevent="popupMap(shipment)" href="">
+                    {{ entry.location }} </a>
+                </div>
+                <div class="history-message">
+                  {{ entry.message }}
+                </div>
+              </div>
+
+            </div>
+          </div>
+          <div class="deleteShipment" v-show="expanded == shipment">
+            <button @click.stop="deleteShipment(shipment)" class="material-icons delete">delete</button>
+          </div>
+        </td>
+      </tr>
+    </table>
+  </div>
+  <script>
+    var app = new Vue({
+      data: {
+        showAdd: false,
+        addForm: {
+          trackingId: "",
+          carrier: "",
+          comment: ""
+        },
+        map: null,
+        mapItems: [],
+        mapTitle: "",
+        showMap: false,
+        expanded: null,
+        shipments: [],
+        dark_mode: false,
+      },
+      methods: {
+        checkForm(e) {
+          this.addForm.trackingId = this.addForm.trackingId.trim();
+
+          if (this.addForm.trackingId == "" || this.addForm.carrier == "") {
+            e.preventDefault();
+          }
+
+          if (this.addForm.comment == "") {
+            this.addForm.comment = this.addForm.carrier;
+          }
+        },
+        addShipment() {
+          if (this.showAdd) {
+            this.showAdd = false
+            this.addForm.trackingId = "";
+            this.addForm.carrier = "";
+            this.addForm.comment = "";
+
+          }
+          else {
+            this.showAdd = true;
+          }
+        },
+        getCarrierLogo(carrier) {
+          return carrier.toLocaleLowerCase();
+        },
+        popupMap(shipment) {
+          if (this.showMap) {
+            this.showMap = false;
+          }
+          else {
+            this.showMap = true;
+            this.mapTitle = "Loading... "
+
+            this.mapItems.forEach(item => {
+              this.map.removeLayer(item);
+            });
+
+            Vue.nextTick(async () => {
+              if (!this.map) {
+                this.map = L.map("internalMap").setView([0, 0], 12);
+                L.tileLayer('http://{s}.tile.osm.org/{z}/{x}/{y}.png').addTo(this.map);
+              }
+
+              this.map.setView([0, 0], 12);
+
+              const history = shipment.history.filter(e => e.lat != 0 && e.long != 0);
+
+              console.log("==============");
+              console.log(history);
+
+              const points = history.map(e => L.latLng(e.lat, e.long));
+
+              this.map.fitBounds(L.latLngBounds(points));
+
+              // checken was ist wenn 0 drin ist
+              //const path = L.polyline(points, { className: 'tracking_line', snakingSpeed: 500 });
+
+              const path = L.motion.polyline(points, {
+                className: 'tracking_line',
+              }, {
+                  easing: L.Motion.Ease.easeInOutQuart,
+                  auto: true,
+                  duration: 2000,
+                }, {
+                  removeOnEnd: false,
+                  icon: L.divIcon({
+                    html: "<div class='material-icons trackingIcon'>🚚</div>",
+                    iconSize: L.point(0, 0)
+                  })
+                }).addTo(this.map);
+
+              this.map.addLayer(path);
+              this.mapItems.push(path);
+
+              var start = history[0]; // lila
+              var current = history[history.length - 1]; // grün
+
+              this.mapTitle = current.location;
+
+              var greenIcon = new L.Icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+              });
+
+              var violetIcon = new L.Icon({
+                iconUrl: 'https://cdn.rawgit.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-violet.png',
+                shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+              });
+
+              points.forEach((point, i) => {
+                const marker = L.marker(point, { autoPan: true });
+
+                const entry = history[i];
+
+                // ugly af monkaS
+                var test = history.filter(e => e.location == entry.location && e != entry);
+
+                if (test.every(t => t.updatedAt < entry.updatedAt)) {
+                  //entry.lat + " " + " " + entry.long + " " + 
+                  marker.bindTooltip(entry.location + " <br> " + this.formatDateTime(entry.updatedAt), {
+                    permanent: true,
+                  }).openTooltip();
+
+                  if (start == entry) {
+                    marker.setIcon(violetIcon);
+                  }
+
+                  if (current == entry) {
+                    marker.setIcon(greenIcon);
+                  }
+
+                  this.map.addLayer(marker);
+                  this.mapItems.push(marker);
+                }
+              });
+            });
+          }
+        },
+        getColor(status) {
+          switch (status) {
+            case "Delivery":
+              return "warning";
+            case "Transit":
+              return "error";
+            case "Done":
+              return "ok";
+            case "Invalid":
+              return "critical";
+            case "Pickup":
+              return "info";
+            default:
+              return "";
+          }
+        },
+        getIcon(status) {
+          switch (status) {
+            case "Done":
+              return "check_circle_outline";
+            case "Transit":
+              return "airplanemode_active";
+            case "Delivery":
+              return "airport_shuttle";
+            case "Invalid":
+              return "cancel";
+            case "Pickup":
+              return "error";
+            default:
+              return "refresh";
+          }
+        },
+        filterHistory(shipment) {
+          var tmp = shipment.history.slice().reverse();
+
+          if (shipment == this.expanded) {
+            return tmp;
+          }
+          return tmp.slice(0, 1);
+        },
+        expand(shipment) {
+          if (this.expanded == shipment) {
+            this.expanded = null;
+          }
+          else {
+            this.expanded = shipment;
+          }
+        },
+        toggleTheme() {
+          this.dark_mode = !this.dark_mode;
+        },
+        formatHistory(entry) {
+          return entry.message;
+        },
+        formatDateTime(date_string) {
+          return new Date(date_string).toLocaleString();
+        },
+        async deleteShipment(shipment) {
+          var result = confirm("Delete shipment " + shipment.trackingId + " ?");
+          if (!result) {
+            return;
+          }
+
+          var result = await fetch("/api/shipments/" + shipment.id, {
+            method: "DELETE",
+          });
+
+          if (result.status === 200) {
+            var index = this.shipments.indexOf(shipment);
+            this.shipments.splice(index, 1);
+          }
+        }
+      },
+      el: "#app",
+      async mounted() {
+        setInterval(async () => {
+          var result = await fetch("/api/shipments");
+          var shipments = await result.json();
+
+          // OMEGALUL LULW LOLW WiredChamp
+          for (const shipment of shipments) {
+            var index = this.shipments.findIndex(s => s.id == shipment.id);
+            if (index != -1) {
+              var tmp = this.shipments[index]
+
+              tmp.hasData = shipment.hasData;
+              tmp.comment = shipment.comment;
+
+              Vue.set(tmp, "status", shipment.status);
+              Vue.set(tmp, "history", shipment.history);
+            }
+            else {
+              this.shipments.push(shipment);
+            }
+          }
+
+          var outdated = this.shipments.filter(s => shipments.findIndex(s2 => s2.id == s.id) == -1);
+
+          outdated.forEach(shipment => {
+            var index = this.shipments.indexOf(shipment);
+            this.shipments.splice(index, 1);
+          });
+
+        }, 5000);
+
+        var result = await fetch("/api/shipments");
+        this.shipments = await result.json();
+
+        console.log(this.shipments);
+
+      },
+    });
+  </script>
+</body>
+
+</html>
