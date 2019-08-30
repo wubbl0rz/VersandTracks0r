@@ -26,7 +26,7 @@ namespace VersandTracks0r.Services
                 return Task.CompletedTask;
             }
 
-            return Task.Run(() => 
+            Task.Run(() => 
             {
                 var scanner = new IMAPMailScanner();
 
@@ -40,6 +40,8 @@ namespace VersandTracks0r.Services
                     Thread.Sleep(1000 * 30);
                 }
             });
+
+            return Task.CompletedTask;
         }
 
         private void Scanner_Found(Shipment shipment)
@@ -53,7 +55,7 @@ namespace VersandTracks0r.Services
             Console.WriteLine(shipment.Comment);
             Console.WriteLine(shipment.Carrier);
             Console.WriteLine("@@@@@@@@@@@@@@@@@@@@@@@@");
-
+            
             // exit if already tracking
             if (ctx.Shipment.All(s => s.TrackingId != shipment.TrackingId))
             {

@@ -53,9 +53,9 @@ namespace VersandTracks0r.Services
 
             foreach (var message in messages)
             {
+                Console.WriteLine(message.Subject);
                 this.Parse(message);
             }
-
         }
 
         public void Parse(MimeMessage message)
