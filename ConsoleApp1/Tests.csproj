@@ -7,7 +7,7 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="0.12.1" />
-    <PackageReference Include="MailKit" Version="2.2.0" />
+    <PackageReference Include="MailKit" Version="4.16.0" />
   </ItemGroup>
 
   <ItemGroup>
